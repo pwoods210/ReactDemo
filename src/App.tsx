@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import ListGroup from './Components/ListGroup.tsx'
+import Alert from './Components/Alert.tsx'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -124,6 +125,11 @@ function App() {
       </div>
       <div className="ticks"></div>
       <section id="spacer"></section>
+      <div id="alert">
+        <Alert>
+          <span> ALERT </span>
+        </Alert>
+      </div>
     </>
   )
 }
