@@ -3,9 +3,14 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import ListGroup from './Components/ListGroup.tsx'
 
 function App() {
   const [count, setCount] = useState(0)
+  let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"]
+  const handleSelectItem = (item: string) => {
+    console.log(item);
+  }
 
   return (
     <>
@@ -112,7 +117,11 @@ function App() {
           </ul>
         </div>
       </section>
-
+      <div className="ticks"></div>
+      <section id="spacer"></section>
+      <div id="tester">
+        <ListGroup items={items} heading="Cities" onSelectItem={handleSelectItem}/>
+      </div>
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
