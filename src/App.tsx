@@ -5,12 +5,16 @@ import heroImg from './assets/hero.png'
 import './App.css'
 import ListGroup from './Components/ListGroup.tsx'
 import Alert from './Components/Alert.tsx'
+import Button from './Components/Button.tsx'
 
 function App() {
   const [count, setCount] = useState(0)
   let items = ["New York", "San Francisco", "Tokyo", "London", "Paris"]
   const handleSelectItem = (item: string) => {
     console.log(item);
+  }
+  const handleButtonClick = () => {
+    console.log("Button has been clicked.")
   }
 
   return (
@@ -129,6 +133,10 @@ function App() {
         <Alert>
           <span> ALERT </span>
         </Alert>
+      </div>
+      <div id="Buy/Sell">
+        <Button message="BUY" color="green" onClick={handleButtonClick}/>
+        <Button message="SELL" color="red" onClick={handleButtonClick}/>
       </div>
     </>
   )
