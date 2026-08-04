@@ -12,6 +12,7 @@ Initial development.
 - TypeScript
 - Vite
 - Docker
+- Bootstrap
 
 ## Local Development
 
