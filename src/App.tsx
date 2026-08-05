@@ -4,6 +4,7 @@ import ListGroup from './Components/ListGroup.tsx'
 import Alert from './Components/Alert.tsx'
 import Button from './Components/Button.tsx'
 import Header from './Components/Header.tsx'
+import TradePanel from './Components/TradePanel.tsx'
 
 function App() {
   const [showAlert, setAlertState] = useState(false)
@@ -19,33 +20,8 @@ function App() {
     <>
       <Header />
       <main className="container py-4">
-        <div id="tester">
-          <ListGroup
-            items={items}
-            heading="Cities"
-            onSelectItem={handleSelectItem}
-          />
-        </div>
-        <div>
-          {showAlert && (
-            <Alert onClose={() => setAlertState(false)}>
-              <span>ALERT</span>
-            </Alert>
-          )}
-          <Button
-            message="Alert"
-            onClick={() => setAlertState(true)}
-          />
-          <Button
-            message="BUY"
-            color="green"
-            onClick={handleButtonClick}
-          />
-          <Button
-            message="SELL"
-            color="red"
-            onClick={handleButtonClick}
-          />
+        <div id="trade_panel">
+          <TradePanel />
         </div>
       </main>
     </>
