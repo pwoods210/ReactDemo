@@ -35,7 +35,7 @@ def get_health() -> dict[str, str]:
 def get_discoveries() -> list[DiscoveredToken]:
     return [
         DiscoveredToken(
-            name="Example Meme Token",
+            name="Fresh Meme of the Day",
             symbol="MEME",
             token_address="7YxExampleTokenAddress123456789ABCDEFG",
             source="DexScreener",
