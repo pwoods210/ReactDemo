@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import Header from './Components/Header.tsx'
 import TradePanel from './Components/TradePanel.tsx'
 import DiscoveryFeed from './Components/DiscoveryFeed.tsx'
 
