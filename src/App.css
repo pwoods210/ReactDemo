@@ -129,3 +129,159 @@
   width: 100%;
   max-width: 20rem;
 }
+
+.discovery-feed {
+  padding: 1.25rem;
+
+  background-color: var(--app-surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 1rem;
+}
+
+.discovery-feed-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  margin-bottom: 1rem;
+}
+
+.discovery-feed-label {
+  margin-bottom: 0.25rem;
+
+  color: var(--app-accent);
+
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.discovery-feed-title {
+  margin: 0;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.discovery-feed-content {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+}
+
+.discovery-card {
+  width: 100%;
+  max-width: 24rem;
+  flex: 0 0 auto;
+
+  padding: 1rem;
+
+  background-color: var(--app-surface-raised);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+}
+
+.discovery-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+
+  margin-bottom: 1rem;
+}
+
+.token-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  min-width: 0;
+}
+
+.token-icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  place-items: center;
+
+  background-color: var(--app-accent);
+  color: #101318;
+
+  border-radius: 50%;
+
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.token-name {
+  overflow: hidden;
+
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.token-symbol {
+  margin-top: 0.1rem;
+
+  color: var(--app-text-muted);
+
+  font-size: 0.8rem;
+}
+
+.token-address-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.6rem;
+}
+
+.token-address-row code {
+  color: var(--bs-body-color);
+
+  font-size: 0.85rem;
+}
+
+.token-detail-label {
+  color: var(--app-text-muted);
+
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.discovery-card-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.discovery-card-details > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  min-width: 0;
+
+  font-size: 0.8rem;
+}
+
+@media (max-width: 575px) {
+  .discovery-card {
+    max-width: none;
+  }
+
+  .discovery-card-details {
+    grid-template-columns: 1fr;
+  }
+}
