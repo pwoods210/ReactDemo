@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Meme Trade API"
+    app_name: str = "TerMEMEal API"
     app_version: str = "0.1.0"
     frontend_origin: str = "http://localhost:5173"
 
