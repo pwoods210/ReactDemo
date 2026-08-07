@@ -36,3 +36,9 @@ Thumbs.db
 
 # TypeScript incremental build information
 *.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
