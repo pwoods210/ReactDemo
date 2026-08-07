@@ -1,47 +1,29 @@
-from datetime import datetime
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.schemas import DiscoveredToken, DiscoveryStatus
+from app.api.discoveries import router as discoveries_router
+from app.api.health import router as health_router
+from app.config import get_settings
+
+
+settings = get_settings()
 
 
 app = FastAPI(
-    title="Meme Trade API",
+    title=settings.app_name,
     description="Backend API for token discovery and trade operations.",
-    version="0.1.0",
+    version=settings.app_version,
 )
 
-# The React development server runs on a different browser origin.
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[settings.frontend_origin],
     allow_credentials=False,
     allow_methods=["GET"],
     allow_headers=["*"],
 )
 
 
-@app.get("/health")
-def get_health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.get(
-    "/api/discoveries",
-    response_model=list[DiscoveredToken],
-    response_model_by_alias=True,
-)
-def get_discoveries() -> list[DiscoveredToken]:
-    return [
-        DiscoveredToken(
-            name="Fresh Meme of the Day",
-            symbol="MEME",
-            token_address="7YxExampleTokenAddress123456789ABCDEFG",
-            source="DexScreener",
-            discovered_at=datetime.fromisoformat(
-                "2026-08-05T21:00:00-04:00"
-            ),
-            status=DiscoveryStatus.NEW,
-        )
-    ]
+app.include_router(health_router)
+app.include_router(discoveries_router)
