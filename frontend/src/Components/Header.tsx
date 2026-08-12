@@ -23,7 +23,13 @@ function Header() {
           </div>
           <div className="header-status d-flex align-items-center gap-3">
             <span className="badge rounded-pill text-bg-warning">
-              Paper Mode
+              Discovery Service
+            </span>
+            <span className="badge rounded-pill text-bg-warning">
+              Trade Service
+            </span>
+            <span className="badge rounded-pill text-bg-warning">
+              Database Service
             </span>
             <div className="wallet-status">
               <span className="status-dot" aria-hidden="true"></span>
