@@ -1,57 +1,43 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import TokenCard from "./TokenCard";
 import type { DiscoveredToken } from "./TokenCard";
 
+
 const DISCOVERIES_URL = "http://localhost:8000/api/discoveries";
 
+
+async function fetchDiscoveries(
+  signal: AbortSignal,
+): Promise<DiscoveredToken[]> {
+  const response = await fetch(DISCOVERIES_URL, {
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Discovery request failed with status ${response.status}`,
+    );
+  }
+
+  return response.json();
+}
+
+
 function DiscoveryFeed() {
-  const [tokens, setTokens] = useState<DiscoveredToken[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: tokens = [],
+    isPending,
+    isError,
+    error,
+    isFetching,
+  } = useQuery({
+    queryKey: ["discoveries"],
+    queryFn: ({ signal }) => fetchDiscoveries(signal),
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadDiscoveries() {
-      try {
-        const response = await fetch(DISCOVERIES_URL, {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(
-            `Discovery request failed with status ${response.status}`,
-          );
-        }
-        const discoveredTokens =
-          (await response.json()) as DiscoveredToken[];
-
-        setTokens(discoveredTokens);
-      } catch (requestError) {
-        if (
-          requestError instanceof DOMException &&
-          requestError.name === "AbortError"
-        ) {
-          return;
-        }
-        const message =
-          requestError instanceof Error
-            ? requestError.message
-            : "An unknown error occurred.";
-
-        setError(message);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadDiscoveries();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
+    // Temporary polling until we add the live SSE connection.
+    refetchInterval: 5000,
+  });
 
   const tokenCountLabel =
     tokens.length === 1
@@ -65,30 +51,45 @@ function DiscoveryFeed() {
           <div className="discovery-feed-label live-pulse">
             Live discovery
           </div>
-          <h2 className="discovery-feed-title" />
+
+          <h2 className="discovery-feed-title">
+            Recently discovered tokens
+          </h2>
         </div>
-        <span className="badge rounded-pill text-bg-secondary">
-          {tokenCountLabel}
-        </span>
+
+        <div className="d-flex align-items-center gap-2">
+          {isFetching && !isPending && (
+            <span className="text-secondary small">
+              Refreshing...
+            </span>
+          )}
+
+          <span className="badge rounded-pill text-bg-secondary">
+            {tokenCountLabel}
+          </span>
+        </div>
       </header>
+
       <div className="discovery-feed-content">
-        {isLoading && (
+        {isPending && (
           <p className="text-secondary mb-0">
             Loading discovered tokens...
           </p>
         )}
-        {!isLoading && error && (
+
+        {isError && (
           <div className="alert alert-danger mb-0" role="alert">
-            Unable to load discoveries: {error}
+            Unable to load discoveries: {error.message}
           </div>
         )}
-        {!isLoading && !error && tokens.length === 0 && (
+
+        {!isPending && !isError && tokens.length === 0 && (
           <p className="text-secondary mb-0">
             Listening for new token discoveries...
           </p>
         )}
-        {!isLoading &&
-          !error &&
+
+        {!isError &&
           tokens.map((token) => (
             <TokenCard
               key={token.tokenAddress}
@@ -99,5 +100,6 @@ function DiscoveryFeed() {
     </section>
   );
 }
+
 
 export default DiscoveryFeed;
