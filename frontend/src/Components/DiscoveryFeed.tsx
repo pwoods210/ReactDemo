@@ -65,9 +65,7 @@ function DiscoveryFeed() {
           <div className="discovery-feed-label live-pulse">
             Live discovery
           </div>
-          <h2 className="discovery-feed-title">
-            Recently discovered tokens
-          </h2>
+          <h2 className="discovery-feed-title" />
         </div>
         <span className="badge rounded-pill text-bg-secondary">
           {tokenCountLabel}

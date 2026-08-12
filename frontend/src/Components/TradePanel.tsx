@@ -11,7 +11,7 @@ function TradePanel() {
               Enter a token address and configure your trade.
             </p>
           </div>
-          <span className="badge rounded-pill text-bg-warning">
+          <span className="badge rounded-pill text-bg-secondary">
             Paper Mode
           </span>
         </div>
