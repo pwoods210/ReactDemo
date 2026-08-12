@@ -6,7 +6,7 @@ from app.schemas.discovery import DiscoveredToken, DiscoveryStatus
 def get_recent_discoveries() -> list[DiscoveredToken]:
     return [
         DiscoveredToken(
-            name="Example Meme Token 2",
+            name="Example Meme Token",
             symbol="MEME",
             token_address="7YxExampleTokenAddress123456789ABCDEFG",
             source="DexScreener",

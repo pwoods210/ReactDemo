@@ -1,27 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { fetchDiscoveries } from "../api/discoveries";
 import TokenCard from "./TokenCard";
-import type { DiscoveredToken } from "./TokenCard";
-
-
-const DISCOVERIES_URL = "http://localhost:8000/api/discoveries";
-
-
-async function fetchDiscoveries(
-  signal: AbortSignal,
-): Promise<DiscoveredToken[]> {
-  const response = await fetch(DISCOVERIES_URL, {
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Discovery request failed with status ${response.status}`,
-    );
-  }
-
-  return response.json();
-}
 
 
 function DiscoveryFeed() {
@@ -35,7 +15,7 @@ function DiscoveryFeed() {
     queryKey: ["discoveries"],
     queryFn: ({ signal }) => fetchDiscoveries(signal),
 
-    // Temporary polling until we add the live SSE connection.
+    // Temporary polling until live SSE updates are added.
     refetchInterval: 5000,
   });
 
@@ -78,16 +58,21 @@ function DiscoveryFeed() {
         )}
 
         {isError && (
-          <div className="alert alert-danger mb-0" role="alert">
+          <div
+            className="alert alert-danger mb-0"
+            role="alert"
+          >
             Unable to load discoveries: {error.message}
           </div>
         )}
 
-        {!isPending && !isError && tokens.length === 0 && (
-          <p className="text-secondary mb-0">
-            Listening for new token discoveries...
-          </p>
-        )}
+        {!isPending &&
+          !isError &&
+          tokens.length === 0 && (
+            <p className="text-secondary mb-0">
+              Listening for new token discoveries...
+            </p>
+          )}
 
         {!isError &&
           tokens.map((token) => (
@@ -100,6 +85,5 @@ function DiscoveryFeed() {
     </section>
   );
 }
-
 
 export default DiscoveryFeed;
