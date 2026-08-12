@@ -1,13 +1,7 @@
-export type DiscoveryStatus = "new" | "watching" | "graduated";
-
-export interface DiscoveredToken {
-  name: string;
-  symbol: string;
-  tokenAddress: string;
-  source: string;
-  discoveredAt: string;
-  status: DiscoveryStatus;
-}
+import type {
+  DiscoveredToken,
+  DiscoveryStatus,
+} from "../Common/types";
 
 interface TokenCardProps {
   token: DiscoveredToken;
