@@ -80,7 +80,7 @@ function DiscoveryFeed() {
           )}
 
         {!isError &&
-          tokens.map((token) => (
+          [...tokens].reverse().map((token) => (
             <TokenCard
               key={token.tokenAddress}
               token={token}

@@ -20,6 +20,19 @@ services:
       db:
         condition: service_healthy
 
+  listener:
+    build:
+      context: ./backend
+    command: python -m app.workers.listener
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
   db:
     image: postgres:18-alpine
     environment:

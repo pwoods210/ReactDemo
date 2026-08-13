@@ -6,6 +6,9 @@ import aiohttp
 import websockets
 from websockets.exceptions import ConnectionClosed, ConnectionClosedError
 
+from app.database.connection import SessionLocal
+from app.services.discovery import record_discovery
+
 
 WS_URL = "wss://api.dexscreener.com/token-profiles/latest/v1"
 DEX_TOKEN_URL = (
@@ -16,12 +19,8 @@ DEX_TOKEN_URL = (
 GRADUATION_POLL_SECONDS = 60
 GRADUATION_EXPIRY_SECONDS = 3 * 60 * 60
 
-
+# replace with DB persistence?
 graduation_watch: dict[str, dict] = {}
-
-# Temporary process-local deduplication.
-# PostgreSQL will eventually become the durable authority.
-emitted_tokens: set[str] = set()
 
 
 def now_utc() -> datetime:
@@ -84,38 +83,55 @@ def add_to_graduation_watch(
     )
 
 
-async def emit_discovery(
+def persist_discovery_sync(
     token_profile: dict,
     pair: dict,
-    discovery_source: str,
+    status: str,
+    graduated_at: datetime | None = None,
 ) -> None:
     token_address = token_profile.get("tokenAddress")
 
     if not token_address:
         return
 
-    if token_address in emitted_tokens:
-        return
+    base_token = pair.get("baseToken", {}) or {}
 
-    emitted_tokens.add(token_address)
+    with SessionLocal() as session:
+        discovery = record_discovery(
+            session,
+            token_address=token_address,
+            pair_address=pair.get("pairAddress"),
+            name=base_token.get("name", ""),
+            symbol=base_token.get("symbol", ""),
+            source="DexScreener",
+            exchange=str(
+                pair.get("dexId", "")
+            ).lower() or None,
+            status=status,
+            graduated_at=graduated_at,
+        )
 
-    discovery = {
-        "token_address": token_address,
-        "pair_address": pair.get("pairAddress"),
-        "name": pair.get("baseToken", {}).get("name", ""),
-        "symbol": pair.get("baseToken", {}).get("symbol", ""),
-        "exchange": pair.get("dexId"),
-        "source": "DexScreener",
-        "discovery_source": discovery_source,
-        "url": pair.get("url") or token_profile.get("url"),
-        "discovered_at": now_utc().isoformat(),
-    }
+    print(
+        f"[database] discovery id={discovery.id} "
+        f"symbol={discovery.symbol} "
+        f"exchange={discovery.exchange} "
+        f"status={discovery.status}"
+    )
 
-    print("\n[DISCOVERY]")
-    print(json.dumps(discovery, indent=2))
 
-    # Next step:
-    # save this discovery to PostgreSQL.
+async def persist_discovery(
+    token_profile: dict,
+    pair: dict,
+    status: str,
+    graduated_at: datetime | None = None,
+) -> None:
+    await asyncio.to_thread(
+        persist_discovery_sync,
+        token_profile,
+        pair,
+        status,
+        graduated_at,
+    )
 
 
 async def handle_token_profile(
@@ -151,16 +167,25 @@ async def handle_token_profile(
         ).lower()
 
         if dex_id == "pumpfun":
+            await persist_discovery(
+                token_profile=token_profile,
+                pair=pair,
+                status="watching",
+            )
+
             add_to_graduation_watch(
                 token_address,
                 token_profile,
             )
 
-        elif dex_id in {"pumpswap", "raydium"}:
-            await emit_discovery(
+        elif dex_id in {
+            "pumpswap",
+            "raydium",
+        }:
+            await persist_discovery(
                 token_profile=token_profile,
                 pair=pair,
-                discovery_source=f"direct_{dex_id}_profile",
+                status="new",
             )
 
             return
@@ -209,10 +234,11 @@ async def check_graduations(
                 f"[graduated] {token_address}"
             )
 
-            await emit_discovery(
+            await persist_discovery(
                 token_profile=info["token_profile"],
                 pair=pair,
-                discovery_source="pumpfun_graduation",
+                status="graduated",
+                graduated_at=now_utc(),
             )
 
             to_remove.append(token_address)
