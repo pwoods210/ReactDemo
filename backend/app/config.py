@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "TerMEMEal API"
     app_version: str = "0.1.0"
     frontend_origin: str = "http://localhost:5173"
+    database_url: str
 
     model_config = SettingsConfigDict(
         env_file=".env",

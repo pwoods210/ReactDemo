@@ -36,7 +36,6 @@ function DiscoveryFeed() {
           </div>
 
           <h2 className="discovery-feed-title">
-            Recently discovered tokens
           </h2>
         </div>
 
