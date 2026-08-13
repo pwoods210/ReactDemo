@@ -171,7 +171,7 @@
 
   overflow-x: auto;
 
-  padding-bottom: 0.5rem;
+  padding: 0.25rem;
 
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -179,6 +179,51 @@
 
 .discovery-feed-content::-webkit-scrollbar {
   display: none;
+}
+
+.discovery-feed-viewport {
+  position: relative;
+  overflow: hidden;
+
+  padding: 0.75rem;
+
+  background-color: var(--app-feed-surface);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.85rem;
+}
+
+.discovery-feed-viewport::before,
+.discovery-feed-viewport::after {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+  width: 2.5rem;
+
+  z-index: 2;
+  pointer-events: none;
+}
+
+.discovery-feed-viewport::before {
+  left: 0;
+
+  background: linear-gradient(
+    to right,
+    var(--app-feed-surface),
+    transparent
+  );
+}
+
+.discovery-feed-viewport::after {
+  right: 0;
+
+  background: linear-gradient(
+    to left,
+    var(--app-feed-surface),
+    transparent
+  );
 }
 
 .discovery-card {

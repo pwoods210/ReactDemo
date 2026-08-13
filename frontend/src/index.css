@@ -1,13 +1,13 @@
 [data-bs-theme="dark"] {
-  /* Override selected Bootstrap theme variables */
   --bs-body-bg: #121519;
   --bs-body-color: #f1f3f5;
   --bs-secondary-color: #9da5af;
   --bs-border-color: #343a40;
 
-  /* Application-specific variables */
   --app-surface: #1a1e23;
   --app-surface-raised: #22272e;
+  --app-feed-surface: #0D0D0D;
+
   --app-text-muted: #9da5af;
   --app-accent: #7aa2ff;
 }
