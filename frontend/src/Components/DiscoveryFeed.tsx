@@ -113,17 +113,19 @@ export default function DiscoveryFeed() {
 
       {!isPending && !isError && tokens.length > 0 && (
         <>
-          <div
-            ref={feedRef}
-            className="discovery-feed-content"
-            onScroll={handleFeedScroll}
-          >
-            {[...tokens].reverse().map((token) => (
-              <TokenCard
-                key={token.id}
-                token={token}
-              />
-            ))}
+          <div className="discovery-feed-viewport">
+            <div
+              ref={feedRef}
+              className="discovery-feed-content"
+              onScroll={handleFeedScroll}
+            >
+              {[...tokens].reverse().map((token) => (
+                <TokenCard
+                  key={token.id}
+                  token={token}
+                />
+              ))}
+            </div>
           </div>
 
           {tokens.length > 1 && (
