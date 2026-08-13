@@ -1,2 +1,5 @@
 fastapi[standard]==0.141.1
 pydantic-settings
+sqlalchemy
+psycopg[binary]
+alembic

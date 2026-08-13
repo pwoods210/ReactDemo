@@ -4,6 +4,7 @@ export type DiscoveryStatus =
   | "graduated";
 
 export interface DiscoveredToken {
+  id: number,
   name: string;
   symbol: string;
   tokenAddress: string;

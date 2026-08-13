@@ -11,8 +11,12 @@ class DiscoveryStatus(StrEnum):
 
 
 class DiscoveredToken(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
+    id: int
     name: str
     symbol: str
     token_address: str = Field(alias="tokenAddress")
