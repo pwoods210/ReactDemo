@@ -3,3 +3,5 @@ pydantic-settings
 sqlalchemy
 psycopg[binary]
 alembic
+aiohttp
+websockets
