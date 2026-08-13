@@ -168,13 +168,22 @@
 .discovery-feed-content {
   display: flex;
   gap: 1rem;
+
   overflow-x: auto;
+
+  padding-bottom: 0.5rem;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.discovery-feed-content::-webkit-scrollbar {
+  display: none;
 }
 
 .discovery-card {
-  width: 100%;
-  max-width: 24rem;
-  flex: 0 0 auto;
+  flex: 0 0 21rem;
+  width: auto;
 
   padding: 1rem;
 
@@ -278,10 +287,100 @@
 
 @media (max-width: 575px) {
   .discovery-card {
-    max-width: none;
+    flex-basis: 85%;
   }
 
   .discovery-card-details {
     grid-template-columns: 1fr;
   }
+}
+
+.discovery-scroll-control {
+  display: flex;
+  justify-content: center;
+
+  margin-top: 0.75rem;
+}
+
+.discovery-scroll-track {
+  position: relative;
+
+  width: 9rem;
+  height: 2rem;
+
+  background-color: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+}
+
+.discovery-scroll-direction {
+  position: absolute;
+  top: 50%;
+
+  color: var(--app-text-muted);
+
+  font-size: 1.1rem;
+  line-height: 1;
+
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.discovery-scroll-left {
+  left: 0.75rem;
+}
+
+.discovery-scroll-right {
+  right: 0.75rem;
+}
+
+.discovery-scroll-handle {
+  --lever-offset: 0px;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 2.25rem;
+  height: 2.25rem;
+
+  padding: 0;
+
+  background-color: var(--app-surface-raised);
+  border: 2px solid var(--app-accent);
+  border-radius: 50%;
+
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  transform:
+    translate(
+      calc(-50% + var(--lever-offset)),
+      -50%
+    );
+
+  transition:
+    transform 140ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.discovery-scroll-handle:hover {
+  background-color: var(--app-surface);
+}
+
+.discovery-scroll-handle.is-dragging {
+  cursor: grabbing;
+
+  background-color: var(--app-accent);
+
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.discovery-scroll-handle:focus-visible {
+  outline: 3px solid var(--app-accent);
+  outline-offset: 3px;
 }

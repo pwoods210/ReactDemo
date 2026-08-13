@@ -1,10 +1,13 @@
+import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchDiscoveries } from "../api/discoveries";
+import DiscoveryScrollControl from "./DiscoveryScroll";
 import TokenCard from "./TokenCard";
 
-
 function DiscoveryFeed() {
+  const feedRef = useRef<HTMLDivElement>(null);
+
   const {
     data: tokens = [],
     isPending,
@@ -50,7 +53,10 @@ function DiscoveryFeed() {
         </div>
       </header>
 
-      <div className="discovery-feed-content">
+      <div
+        ref={feedRef}
+        className="discovery-feed-content"
+      >
         {isPending && (
           <p className="text-secondary mb-0">
             Loading discovered tokens...
@@ -82,6 +88,12 @@ function DiscoveryFeed() {
             />
           ))}
       </div>
+
+      {tokens.length > 1 && (
+        <DiscoveryScrollControl
+          scrollContainerRef={feedRef}
+        />
+      )}
     </section>
   );
 }
