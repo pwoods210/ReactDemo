@@ -1,11 +1,40 @@
-import type { ServiceHealth, ServicesHealthResponse } from "../Common/types";
+import type {
+  ServiceStatus,
+  ServicesHealthResponse,
+} from "../Common/types";
+
 
 export async function getServicesHealth(): Promise<ServicesHealthResponse> {
-  const response = await fetch("http://localhost:8000/health/services");
+  const [servicesResponse, apiResponse] = await Promise.all([
+    fetch("http://localhost:8000/health/services"),
+    fetch("http://localhost:8000/health/api"),
+  ]);
 
-  if (!response.ok) {
+
+  if (!servicesResponse.ok) {
     throw new Error("Failed to fetch service health");
   }
 
-  return response.json();
+
+  const services = await servicesResponse.json();
+
+
+  let apiStatus: ServiceStatus = "down";
+
+  if (apiResponse.ok) {
+    const apiHealthy = await apiResponse.json();
+
+    if (apiHealthy === true) {
+      apiStatus = "up";
+    }
+  }
+
+
+  return {
+    ...services,
+
+    api: {
+      status: apiStatus,
+    },
+  };
 }

@@ -8,8 +8,8 @@ router = APIRouter(prefix="/health", tags=["health"])
 
 
 @router.get("/api")
-def get_health() -> dict[str, str]:
-    return {"status": "ok"}
+def get_health() -> bool:
+    return True
 
 @router.post("/discovery/heartbeat")
 def discovery_heartbeat():
