@@ -10,14 +10,21 @@ from app.database.connection import SessionLocal
 from app.services.discovery import record_discovery
 
 
+API_URL = "http://api:8000"
+
 WS_URL = "wss://api.dexscreener.com/token-profiles/latest/v1"
+
 DEX_TOKEN_URL = (
     "https://api.dexscreener.com/tokens/v1/"
     "{chain_id}/{token_address}"
 )
 
+
+HEARTBEAT_SECONDS = 5
+
 GRADUATION_POLL_SECONDS = 60
 GRADUATION_EXPIRY_SECONDS = 3 * 60 * 60
+
 
 # replace with DB persistence?
 graduation_watch: dict[str, dict] = {}
@@ -25,6 +32,38 @@ graduation_watch: dict[str, dict] = {}
 
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+async def send_heartbeat(
+    session: aiohttp.ClientSession,
+) -> None:
+    try:
+        async with session.post(
+            f"{API_URL}/health/discovery/heartbeat",
+            timeout=aiohttp.ClientTimeout(total=2),
+        ) as response:
+            if response.status != 200:
+                print(
+                    f"[heartbeat] HTTP {response.status}"
+                )
+
+    except Exception as error:
+        print(
+            "[heartbeat error]",
+            type(error).__name__,
+            error,
+        )
+
+
+async def heartbeat_loop(
+    session: aiohttp.ClientSession,
+) -> None:
+    while True:
+        await send_heartbeat(session)
+
+        await asyncio.sleep(
+            HEARTBEAT_SECONDS
+        )
 
 
 async def hydrate_token(
@@ -282,6 +321,10 @@ async def listen_once() -> None:
             graduation_poll_loop(session)
         )
 
+        heartbeat_task = asyncio.create_task(
+            heartbeat_loop(session)
+        )
+
         try:
             async with websockets.connect(
                 WS_URL,
@@ -336,9 +379,15 @@ async def listen_once() -> None:
 
         finally:
             graduation_task.cancel()
+            heartbeat_task.cancel()
 
             try:
                 await graduation_task
+            except asyncio.CancelledError:
+                pass
+
+            try:
+                await heartbeat_task
             except asyncio.CancelledError:
                 pass
 

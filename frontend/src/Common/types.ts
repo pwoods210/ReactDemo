@@ -12,3 +12,15 @@ export interface DiscoveredToken {
   discoveredAt: string;
   status: DiscoveryStatus;
 }
+
+export type ServiceStatus = "up" | "down";
+
+export interface ServiceHealth {
+  status: ServiceStatus;
+}
+
+export interface ServicesHealthResponse {
+  discovery: ServiceHealth;
+  trade: ServiceHealth;
+  database: ServiceHealth;
+}

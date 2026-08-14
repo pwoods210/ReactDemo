@@ -429,3 +429,16 @@
   outline: 3px solid var(--app-accent);
   outline-offset: 3px;
 }
+
+.service-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.9;
+}
+
+.service-status-label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
