@@ -1647,6 +1647,14 @@ database:
 docker compose --profile test run --rm test pytest -m integration
 ```
 
+To run the frontend tests locally with Node 22:
+
+```bash
+cd frontend
+npm ci
+npm test
+```
+
 Expected services:
 
 ```text
