@@ -1639,6 +1639,12 @@ The current tests are fast unit/API-contract tests and do not require a running
 PostgreSQL container. PostgreSQL integration tests can be added separately once
 the repository behavior is covered at the unit level.
 
+To run the PostgreSQL integration tests through Compose:
+
+```bash
+docker compose --profile test run --rm test pytest -m integration
+```
+
 Expected services:
 
 ```text
