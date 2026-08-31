@@ -9,5 +9,7 @@ RUN pip install --no-cache-dir --upgrade -r requirements-dev.txt
 COPY pytest.ini ./
 COPY app ./app
 COPY tests ./tests
+COPY alembic.ini ./
+COPY alembic ./alembic
 
 CMD ["pytest", "-m", "not integration"]

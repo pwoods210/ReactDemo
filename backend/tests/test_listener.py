@@ -1,5 +1,6 @@
 import asyncio
 from datetime import timedelta
+from types import SimpleNamespace
 
 import pytest
 
@@ -147,3 +148,133 @@ def test_check_graduations_removes_expired_tokens_without_hydrating(
     asyncio.run(listener.check_graduations(object()))
 
     assert watch == {}
+
+
+class FakeResponse:
+    def __init__(self, status, payload=None, error=None):
+        self.status = status
+        self.payload = payload
+        self.error = error
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        return None
+
+    async def json(self):
+        if self.error:
+            raise self.error
+
+        return self.payload
+
+
+class FakeHttpSession:
+    def __init__(self, response):
+        self.response = response
+        self.request = None
+
+    def get(self, url, **kwargs):
+        self.request = {"url": url, "kwargs": kwargs}
+        return self.response
+
+
+def test_hydrate_token_returns_pairs_from_successful_response():
+    response = FakeResponse(200, [{"dexId": "pumpswap"}])
+    session = FakeHttpSession(response)
+
+    result = asyncio.run(
+        listener.hydrate_token(session, "solana", "token-123")
+    )
+
+    assert result == [{"dexId": "pumpswap"}]
+    assert session.request["url"].endswith("/solana/token-123")
+
+
+def test_hydrate_token_returns_none_for_bad_http_or_payload():
+    bad_responses = [
+        FakeResponse(503, [{"dexId": "pumpswap"}]),
+        FakeResponse(200, {"not": "a list"}),
+        FakeResponse(200, error=ValueError("invalid JSON")),
+    ]
+
+    for response in bad_responses:
+        result = asyncio.run(
+            listener.hydrate_token(
+                FakeHttpSession(response),
+                "solana",
+                "token-123",
+            )
+        )
+
+        assert result is None
+
+
+def test_persist_discovery_sync_maps_pair_data_to_service(monkeypatch):
+    calls = []
+    session = object()
+    discovery = SimpleNamespace(
+        id=1,
+        symbol="EXAMPLE",
+        exchange="pumpswap",
+        status="new",
+    )
+
+    class FakeSessionContext:
+        def __enter__(self):
+            return session
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return None
+
+    def fake_record_discovery(received_session, **kwargs):
+        calls.append((received_session, kwargs))
+        return discovery
+
+    monkeypatch.setattr(listener, "SessionLocal", FakeSessionContext)
+    monkeypatch.setattr(listener, "record_discovery", fake_record_discovery)
+
+    listener.persist_discovery_sync(
+        {"tokenAddress": "token-123"},
+        {
+            "pairAddress": "pair-123",
+            "dexId": "PumpSwap",
+            "baseToken": {
+                "name": "Example Token",
+                "symbol": "EXAMPLE",
+            },
+        },
+        "new",
+    )
+
+    assert calls == [
+        (
+            session,
+            {
+                "token_address": "token-123",
+                "pair_address": "pair-123",
+                "name": "Example Token",
+                "symbol": "EXAMPLE",
+                "source": "DexScreener",
+                "exchange": "pumpswap",
+                "status": "new",
+                "graduated_at": None,
+            },
+        )
+    ]
+
+
+def test_persist_discovery_sync_skips_profiles_without_token_address(
+    monkeypatch,
+):
+    class UnexpectedSession:
+        def __call__(self):
+            raise AssertionError("database session should not be opened")
+
+    monkeypatch.setattr(listener, "SessionLocal", UnexpectedSession())
+
+    listener.persist_discovery_sync(
+        {},
+        {"pairAddress": "pair-123"},
+        "new",
+    )
