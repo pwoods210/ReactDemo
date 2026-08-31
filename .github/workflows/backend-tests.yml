@@ -22,3 +22,9 @@ jobs:
 
       - name: Run backend tests
         run: docker run --rm turmemeal-backend-test
+
+      - name: Create CI environment file
+        run: cp .env.example .env
+
+      - name: Run PostgreSQL integration tests
+        run: docker compose --profile test run --rm test pytest -m integration
