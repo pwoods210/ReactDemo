@@ -34,6 +34,16 @@ def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def classify_pair(pair: dict) -> str | None:
+    """Return the supported DEX identifier for a pair, if any."""
+    dex_id = str(pair.get("dexId", "")).lower()
+
+    if dex_id in {"pumpfun", "pumpswap", "raydium"}:
+        return dex_id
+
+    return None
+
+
 async def send_heartbeat(
     session: aiohttp.ClientSession,
 ) -> None:
@@ -201,9 +211,7 @@ async def handle_token_profile(
         return
 
     for pair in pairs:
-        dex_id = str(
-            pair.get("dexId", "")
-        ).lower()
+        dex_id = classify_pair(pair)
 
         if dex_id == "pumpfun":
             await persist_discovery(
@@ -262,9 +270,7 @@ async def check_graduations(
             continue
 
         for pair in pairs:
-            dex_id = str(
-                pair.get("dexId", "")
-            ).lower()
+            dex_id = classify_pair(pair)
 
             if dex_id != "pumpswap":
                 continue

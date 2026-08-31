@@ -1,3 +1,124 @@
+""
+ ### 1. Add real tests
+
+  This is the biggest gap relative to “clean, maintainable, and well-tested code.”
+
+  At minimum, add backend tests for:
+
+  - Solana versus non-Solana filtering
+  - Pump.fun, PumpSwap, and Raydium classification
+  - discovery upsert behavior
+  - preventing graduated tokens from being downgraded
+  - API response shape
+  - health-check behavior
+  - graduation expiry and promotion logic
+
+  Use pytest and FastAPI’s test client. A small PostgreSQL integration test suite would be even better.
+
+  For the frontend, at least ensure:
+
+  npm run lint
+  npm run build
+
+  run successfully in CI.
+
+  ### 2. Make worker recovery durable
+
+  The graduation watch is currently an in-memory dictionary:
+
+  graduation_watch: dict[str, dict] = {}
+
+  If the listener restarts, it forgets which Pump.fun tokens were being monitored. That is a meaningful reliability
+  weakness.
+
+  Persist watch state in PostgreSQL, or rebuild the watch list on startup from discoveries with status = "watching".
+
+  This would give you a strong production-engineering story:
+
+  > “The worker is stateless with respect to recovery; pending lifecycle work is reconstructed from PostgreSQL.”
+
+  ### 3. Improve configuration and deployment behavior
+
+  The worker currently hard-codes:
+
+  API_URL = "http://api:8000"
+
+  Move service URLs, polling intervals, and external API URLs into settings/environment variables.
+
+  Also make startup safer:
+
+  - run migrations through an explicit deployment command or entrypoint
+  - add database readiness checks
+  - distinguish liveness from readiness health endpoints
+  - make API and worker configuration consistent
+
+  ### 4. Add CI
+
+  A GitHub Actions workflow should run:
+
+  - Python formatting/linting
+  - pytest
+  - frontend linting
+  - frontend TypeScript/build checks
+  - Docker image builds
+
+  This directly demonstrates maintainability, collaboration readiness, and production discipline.
+
+  ### 5. Tighten the documentation
+
+  The README is extensive, which is good, but it currently overstates some functionality and has a few mismatches:
+
+  - It documents /health, while the implementation exposes /health/api.
+  - It says migrations are part of the system, but Compose does not apply them automatically.
+  - Trading is clearly UI-only and should remain labeled that way.
+  - Add a concise “Quick Start,” architecture diagram, API examples, testing instructions, and known limitations.
+
+  A reviewer should be able to clone the repository and understand it in five minutes.
+
+  ## Strong optional improvements
+
+  These would make the project stand out, but are not required before applying:
+
+  - Add structured logging.
+  - Add retry/backoff handling for DexScreener REST calls.
+  - Add rate-limit handling.
+  - Add a small event model or audit table for lifecycle transitions.
+  - Add Docker Compose integration testing.
+  - Deploy a demo API/frontend somewhere accessible.
+  - Add a short architecture walkthrough video or screenshots.
+  - Add an issue tracker with a few well-written feature and bug issues.
+
+  I would not spend time implementing real crypto trading or wallet integration for this application. It introduces
+  security and blockchain complexity without helping much with the role’s core evaluation criteria.
+
+  ## How I would position it
+
+  Present it as an event-driven data platform, not primarily as a trading app:
+
+  > Built a containerized Python/FastAPI system that consumes live external WebSocket events, hydrates records through
+  > REST APIs, classifies token lifecycle states, persists idempotently to PostgreSQL, and serves a React dashboard with
+  > health monitoring and polling-based updates.
+
+  That description maps directly to Voltus’s work with APIs, data pipelines, distributed services, and production
+  systems.
+
+  ## Practical threshold before applying
+
+  I would apply once you have:
+
+  - meaningful automated backend tests
+  - a working frontend build
+  - durable worker recovery
+  - CI passing
+  - corrected documentation
+  - a clear README and architecture diagram
+  - no misleading claims about unfinished trading features
+
+  At that point, the project would be a credible portfolio demonstration for this entry-level role. The current stack
+  match is already strong; the next step is demonstrating engineering quality and reliability rather than adding more
+  technologies.
+  ""
+
 # TerMEMEal
 
 TerMEMEal is a full-stack, containerized Solana token discovery and trading dashboard.
@@ -1503,6 +1624,20 @@ From the repository root:
 ```powershell
 docker compose up --build
 ```
+
+## Run backend tests
+
+Backend test dependencies are kept separate from the runtime image. Build the
+test image from the backend directory and run pytest:
+
+```bash
+docker build -f Dockerfile.test -t turmemeal-backend-test backend
+docker run --rm turmemeal-backend-test
+```
+
+The current tests are fast unit/API-contract tests and do not require a running
+PostgreSQL container. PostgreSQL integration tests can be added separately once
+the repository behavior is covered at the unit level.
 
 Expected services:
 
