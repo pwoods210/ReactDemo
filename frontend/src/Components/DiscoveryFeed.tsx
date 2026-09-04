@@ -22,6 +22,7 @@ export default function DiscoveryFeed() {
     new Set(),
   );
   const [isReflowing, setIsReflowing] = useState(false);
+  const [refreshAnimationId, setRefreshAnimationId] = useState(0);
 
   const dismissalTimerRef = useRef<number | null>(null);
   const enteringTimerRef = useRef<number | null>(null);
@@ -34,6 +35,8 @@ export default function DiscoveryFeed() {
   const previousTokenIdsRef = useRef<Set<number> | null>(null);
   const animateReplacementRef = useRef(false);
   const dismissalWasAtNewestRef = useRef(false);
+  const wasFetchingRef = useRef(false);
+  const hasLoadedDiscoveriesRef = useRef(false);
 
   // Remembers whether the user is currently following the newest discoveries.
   const isAtNewestRef = useRef(true);
@@ -118,6 +121,22 @@ export default function DiscoveryFeed() {
     );
   }
 
+
+  useEffect(() => {
+    if (
+      isFetching &&
+      !wasFetchingRef.current &&
+      hasLoadedDiscoveriesRef.current
+    ) {
+      setRefreshAnimationId((animationId) => animationId + 1);
+    }
+
+    wasFetchingRef.current = isFetching;
+
+    if (!isPending) {
+      hasLoadedDiscoveriesRef.current = true;
+    }
+  }, [isFetching, isPending]);
 
   useEffect(() => {
     const previousCount = previousTokenCountRef.current;
@@ -337,9 +356,14 @@ export default function DiscoveryFeed() {
           </h2>
         </div>
 
-        {isFetching && !isPending && (
-          <span className="text-body-secondary small">
-            Updating...
+        {!isPending && refreshAnimationId > 0 && (
+          <span
+            className="discovery-feed-refresh"
+            key={refreshAnimationId}
+            aria-hidden="true"
+            title="Refreshing discoveries"
+          >
+            ↻
           </span>
         )}
       </div>

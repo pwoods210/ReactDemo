@@ -68,7 +68,7 @@ function TokenCard({
               token.symbol.slice(0, 1)
             )}
           </div>
-          <div>
+          <div className="token-copy">
             <div className="token-name">{token.name}</div>
             <div className="token-symbol">${token.symbol}</div>
           </div>
