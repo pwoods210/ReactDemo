@@ -178,6 +178,8 @@
   width: 4.5rem;
   height: 4.5rem;
   object-fit: contain;
+
+  filter: brightness(0) invert(1);
 }
 
 .face-gate-kicker {
@@ -433,6 +435,28 @@
   flex-shrink: 0;
 }
 
+.token-status-button {
+  padding: 0.35em 0.65em;
+
+  border: 0;
+  cursor: pointer;
+}
+
+.token-status-button--watching {
+  animation: token-status-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes token-status-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.38;
+  }
+}
+
 .token-copy {
   min-width: 0;
 }
@@ -503,6 +527,18 @@
   color: var(--app-text-muted);
 
   font-size: 0.8rem;
+}
+
+.token-price-change--positive {
+  color: var(--bs-success);
+}
+
+.token-price-change--negative {
+  color: var(--bs-danger);
+}
+
+.token-price-change--neutral {
+  color: var(--app-text-muted);
 }
 
 .token-address-row {
@@ -920,6 +956,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .discovery-feed-refresh {
+    animation: none;
+  }
+
+  .token-status-button--watching {
     animation: none;
   }
 

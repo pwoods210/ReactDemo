@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import type {
   DiscoveredToken,
-  DiscoveryStatus,
 } from "../Common/types";
 
 interface TokenCardProps {
@@ -13,10 +12,18 @@ interface TokenCardProps {
   isEntering?: boolean;
 }
 
-const statusClasses: Record<DiscoveryStatus, string> = {
+type CardBadgeStatus = "new" | "watching" | "seen";
+
+const badgeStatusClasses: Record<CardBadgeStatus, string> = {
   new: "text-bg-success",
   watching: "text-bg-warning",
-  graduated: "text-bg-primary",
+  seen: "text-bg-primary",
+};
+
+const nextBadgeStatus: Record<CardBadgeStatus, CardBadgeStatus> = {
+  new: "watching",
+  watching: "seen",
+  seen: "new",
 };
 
 function shortenAddress(address: string) {
@@ -33,6 +40,23 @@ function getTokenImageUrl(token: DiscoveredToken) {
   return token.pairs.find((pair) => pair.info?.imageUrl)?.info?.imageUrl;
 }
 
+function getFiveMinuteChange(token: DiscoveredToken) {
+  const pair =
+    token.pairs.find((candidate) =>
+      candidate.pairAddress === token.pairAddress,
+    ) ?? token.pairs[0];
+
+  return pair?.priceChange?.m5;
+}
+
+function formatPercentage(value: number | undefined) {
+  if (value === undefined || !Number.isFinite(value)) {
+    return "—";
+  }
+
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
+
 function TokenCard({
   token,
   onDismiss,
@@ -42,7 +66,18 @@ function TokenCard({
 }: TokenCardProps) {
   const imageUrl = getTokenImageUrl(token);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const [badgeStatus, setBadgeStatus] = useState<CardBadgeStatus>("new");
   const imageSrc = imageUrl && imageUrl !== failedImageUrl ? imageUrl : null;
+  const dexName = token.exchange ?? token.source;
+  const fiveMinuteChange = getFiveMinuteChange(token);
+  const fiveMinuteChangeClass =
+    fiveMinuteChange === undefined || !Number.isFinite(fiveMinuteChange)
+      ? "token-price-change--neutral"
+      : fiveMinuteChange > 0
+        ? "token-price-change--positive"
+        : fiveMinuteChange < 0
+          ? "token-price-change--negative"
+          : "token-price-change--neutral";
   const discoveredTime = new Date(token.discoveredAt).toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
@@ -74,11 +109,19 @@ function TokenCard({
           </div>
         </div>
         <div className="token-card-actions">
-          <span
-            className={`badge rounded-pill ${statusClasses[token.status]}`}
+          <button
+            type="button"
+            className={`badge rounded-pill token-status-button ${
+              badgeStatusClasses[badgeStatus]
+            }${badgeStatus === "watching" ? " token-status-button--watching" : ""}`}
+            aria-label={`Mark ${token.name} as ${
+              nextBadgeStatus[badgeStatus]
+            }`}
+            title={`Mark as ${nextBadgeStatus[badgeStatus]}`}
+            onClick={() => setBadgeStatus(nextBadgeStatus[badgeStatus])}
           >
-            {token.status}
-          </span>
+            {badgeStatus}
+          </button>
           {onDismiss ? (
             <button
               type="button"
@@ -100,16 +143,18 @@ function TokenCard({
       </div>
       <div className="discovery-card-details">
         <div>
-          <span className="token-detail-label">Source</span>
-          <span>{token.source}</span>
+          <span className="token-detail-label">DEX</span>
+          <span>{dexName}</span>
         </div>
         <div>
           <span className="token-detail-label">Discovered</span>
           <span>{discoveredTime}</span>
         </div>
         <div>
-          <span className="token-detail-label">Status</span>
-          <span>{token.status}</span>
+          <span className="token-detail-label">5m</span>
+          <span className={`token-price-change ${fiveMinuteChangeClass}`}>
+            {formatPercentage(fiveMinuteChange)}
+          </span>
         </div>
       </div>
     </article>
