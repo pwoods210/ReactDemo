@@ -137,6 +137,7 @@ def persist_discovery_sync(
     pair: dict,
     status: str,
     graduated_at: datetime | None = None,
+    pairs: list[dict] | None = None,
 ) -> None:
     token_address = token_profile.get("tokenAddress")
 
@@ -158,6 +159,8 @@ def persist_discovery_sync(
             ).lower() or None,
             status=status,
             graduated_at=graduated_at,
+            token_profile=token_profile,
+            pairs=pairs if pairs is not None else [pair],
         )
 
     print(
@@ -173,6 +176,7 @@ async def persist_discovery(
     pair: dict,
     status: str,
     graduated_at: datetime | None = None,
+    pairs: list[dict] | None = None,
 ) -> None:
     await asyncio.to_thread(
         persist_discovery_sync,
@@ -180,6 +184,7 @@ async def persist_discovery(
         pair,
         status,
         graduated_at,
+        pairs,
     )
 
 
@@ -218,6 +223,7 @@ async def handle_token_profile(
                 token_profile=token_profile,
                 pair=pair,
                 status="watching",
+                pairs=pairs,
             )
 
             add_to_graduation_watch(
@@ -233,6 +239,7 @@ async def handle_token_profile(
                 token_profile=token_profile,
                 pair=pair,
                 status="new",
+                pairs=pairs,
             )
 
             return
@@ -284,6 +291,7 @@ async def check_graduations(
                 pair=pair,
                 status="graduated",
                 graduated_at=now_utc(),
+                pairs=pairs,
             )
 
             to_remove.append(token_address)

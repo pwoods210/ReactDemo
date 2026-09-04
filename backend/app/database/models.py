@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import JSON, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -40,6 +40,18 @@ class Discovery(Base):
     exchange: Mapped[str | None] = mapped_column(
         String(64),
         nullable=True,
+    )
+
+    token_profile: Mapped[dict] = mapped_column(
+        JSON,
+        default=dict,
+        nullable=False,
+    )
+
+    pairs_data: Mapped[list] = mapped_column(
+        JSON,
+        default=list,
+        nullable=False,
     )
 
     status: Mapped[str] = mapped_column(

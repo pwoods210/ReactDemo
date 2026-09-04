@@ -45,6 +45,13 @@ services:
       db-test:
         condition: service_healthy
 
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    profiles:
+      - test
+
   db-test:
     image: postgres:18-alpine
     profiles:

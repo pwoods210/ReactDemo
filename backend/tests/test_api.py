@@ -14,9 +14,26 @@ def test_get_discoveries_returns_camel_case_api_contract(monkeypatch):
         name="Example Token",
         symbol="EXAMPLE",
         token_address="token-123",
+        pair_address="pair-123",
         source="DexScreener",
+        exchange="pumpswap",
         discovered_at=datetime(2026, 8, 31, tzinfo=timezone.utc),
         status="new",
+        graduated_at=None,
+        token_profile={
+            "chainId": "solana",
+            "tokenAddress": "token-123",
+            "icon": "https://example.com/icon.png",
+        },
+        pairs_data=[
+            {
+                "chainId": "solana",
+                "dexId": "pumpswap",
+                "pairAddress": "pair-123",
+                "priceUsd": "1.25",
+                "liquidity": {"usd": 1000},
+            }
+        ],
     )
 
     monkeypatch.setattr(
@@ -38,8 +55,25 @@ def test_get_discoveries_returns_camel_case_api_contract(monkeypatch):
             "name": "Example Token",
             "symbol": "EXAMPLE",
             "tokenAddress": "token-123",
+            "pairAddress": "pair-123",
             "source": "DexScreener",
+            "exchange": "pumpswap",
             "discoveredAt": "2026-08-31T00:00:00Z",
             "status": "new",
+            "graduatedAt": None,
+            "tokenProfile": {
+                "chainId": "solana",
+                "tokenAddress": "token-123",
+                "icon": "https://example.com/icon.png",
+            },
+            "pairs": [
+                {
+                    "chainId": "solana",
+                    "dexId": "pumpswap",
+                    "pairAddress": "pair-123",
+                    "priceUsd": "1.25",
+                    "liquidity": {"usd": 1000},
+                }
+            ],
         }
     ]

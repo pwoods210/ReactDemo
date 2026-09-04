@@ -50,10 +50,21 @@ def discovery_values(token_address: str, *, status: str = "new") -> dict:
 def test_upsert_updates_existing_token_instead_of_inserting_duplicate(
     db_session,
 ):
+    profile = {
+        "chainId": "solana",
+        "tokenAddress": "abc",
+        "icon": "https://example.com/icon.png",
+    }
+    pairs = [{"dexId": "pumpswap", "priceUsd": "1.25"}]
+
     first = upsert_discovery(
         db_session,
         **discovery_values("abc", status="watching"),
+        token_profile=profile,
+        pairs=pairs,
     )
+    updated_profile = {**profile, "description": "Updated"}
+    updated_pairs = [{"dexId": "pumpswap", "priceUsd": "2.50"}]
     second = upsert_discovery(
         db_session,
         **{
@@ -61,6 +72,8 @@ def test_upsert_updates_existing_token_instead_of_inserting_duplicate(
             "pair_address": "pair-updated",
             "name": "Updated Token",
         },
+        token_profile=updated_profile,
+        pairs=updated_pairs,
     )
 
     stored = db_session.get(Discovery, first.id)
@@ -70,6 +83,8 @@ def test_upsert_updates_existing_token_instead_of_inserting_duplicate(
     assert stored.pair_address == "pair-updated"
     assert stored.name == "Updated Token"
     assert stored.status == "new"
+    assert stored.token_profile == updated_profile
+    assert stored.pairs_data == updated_pairs
 
 
 @pytest.mark.integration
