@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchDiscoveries } from "../api/discoveries";
+import { dismissDiscovery, fetchDiscoveries } from "../api/discoveries";
 import DiscoveryScrollControl from "./DiscoveryScroll";
 import TokenCard from "./TokenCard";
 
 
 export default function DiscoveryFeed() {
   const feedRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   // Remembers whether the user is currently following the newest discoveries.
   const isAtNewestRef = useRef(true);
@@ -25,6 +26,15 @@ export default function DiscoveryFeed() {
     queryKey: ["discoveries"],
     queryFn: ({ signal }) => fetchDiscoveries(signal),
     refetchInterval: 5000,
+  });
+
+  const dismissMutation = useMutation({
+    mutationFn: dismissDiscovery,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["discoveries"],
+      });
+    },
   });
 
 
@@ -87,6 +97,14 @@ export default function DiscoveryFeed() {
         )}
       </div>
 
+      {dismissMutation.isError && (
+        <div className="alert alert-danger mb-3">
+          {dismissMutation.error instanceof Error
+            ? dismissMutation.error.message
+            : "Failed to dismiss token."}
+        </div>
+      )}
+
 
       {isPending && (
         <div className="text-body-secondary">
@@ -123,6 +141,11 @@ export default function DiscoveryFeed() {
                 <TokenCard
                   key={token.id}
                   token={token}
+                  onDismiss={() => dismissMutation.mutate(token.id)}
+                  isDismissing={
+                    dismissMutation.isPending &&
+                    dismissMutation.variables === token.id
+                  }
                 />
               ))}
             </div>

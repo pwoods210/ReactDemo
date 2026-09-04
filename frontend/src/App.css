@@ -254,6 +254,39 @@
   min-width: 0;
 }
 
+.token-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.token-dismiss-button {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  place-items: center;
+
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--app-text-muted);
+
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.token-dismiss-button:hover:not(:disabled),
+.token-dismiss-button:focus-visible {
+  border-color: var(--bs-border-color);
+  color: var(--app-text);
+}
+
+.token-dismiss-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .token-icon {
   display: grid;
   width: 2.75rem;

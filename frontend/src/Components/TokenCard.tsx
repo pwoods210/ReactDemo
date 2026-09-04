@@ -7,6 +7,8 @@ import type {
 
 interface TokenCardProps {
   token: DiscoveredToken;
+  onDismiss?: () => void;
+  isDismissing?: boolean;
 }
 
 const statusClasses: Record<DiscoveryStatus, string> = {
@@ -29,7 +31,11 @@ function getTokenImageUrl(token: DiscoveredToken) {
   return token.pairs.find((pair) => pair.info?.imageUrl)?.info?.imageUrl;
 }
 
-function TokenCard({ token }: TokenCardProps) {
+function TokenCard({
+  token,
+  onDismiss,
+  isDismissing = false,
+}: TokenCardProps) {
   const imageUrl = getTokenImageUrl(token);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const imageSrc = imageUrl && imageUrl !== failedImageUrl ? imageUrl : null;
@@ -59,11 +65,24 @@ function TokenCard({ token }: TokenCardProps) {
             <div className="token-symbol">${token.symbol}</div>
           </div>
         </div>
-        <span
-          className={`badge rounded-pill ${statusClasses[token.status]}`}
-        >
-          {token.status}
-        </span>
+        <div className="token-card-actions">
+          <span
+            className={`badge rounded-pill ${statusClasses[token.status]}`}
+          >
+            {token.status}
+          </span>
+          {onDismiss ? (
+            <button
+              type="button"
+              className="token-dismiss-button"
+              aria-label={`Dismiss ${token.name}`}
+              onClick={onDismiss}
+              disabled={isDismissing}
+            >
+              {isDismissing ? "…" : "×"}
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className="token-address-row">
         <span className="token-detail-label">Token address</span>
