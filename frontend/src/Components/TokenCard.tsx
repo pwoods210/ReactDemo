@@ -9,6 +9,7 @@ interface TokenCardProps {
   token: DiscoveredToken;
   onDismiss?: () => void;
   isDismissing?: boolean;
+  isDismissDisabled?: boolean;
   isEntering?: boolean;
 }
 
@@ -36,6 +37,7 @@ function TokenCard({
   token,
   onDismiss,
   isDismissing = false,
+  isDismissDisabled = false,
   isEntering = false,
 }: TokenCardProps) {
   const imageUrl = getTokenImageUrl(token);
@@ -83,7 +85,7 @@ function TokenCard({
               className="token-dismiss-button"
               aria-label={`Dismiss ${token.name}`}
               onClick={onDismiss}
-              disabled={isDismissing}
+              disabled={isDismissing || isDismissDisabled}
             >
               {isDismissing ? "…" : "×"}
             </button>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { dismissDiscovery, fetchDiscoveries } from "../api/discoveries";
@@ -6,6 +6,7 @@ import DiscoveryScrollControl from "./DiscoveryScroll";
 import TokenCard from "./TokenCard";
 
 const DISMISS_ANIMATION_DURATION_MS = 260;
+const CARD_REFLOW_DURATION_MS = 320;
 const REPLACEMENT_ANIMATION_DURATION_MS = 420;
 const DISCOVERY_SCROLL_POSITION_KEY = "termemeal.discovery-scroll-left";
 
@@ -20,9 +21,16 @@ export default function DiscoveryFeed() {
   const [enteringTokenIds, setEnteringTokenIds] = useState<Set<number>>(
     new Set(),
   );
+  const [isReflowing, setIsReflowing] = useState(false);
 
   const dismissalTimerRef = useRef<number | null>(null);
   const enteringTimerRef = useRef<number | null>(null);
+  const reflowFrameRef = useRef<number | null>(null);
+  const reflowCleanupTimerRef = useRef<number | null>(null);
+  const slotRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const replacementStartPositionsRef = useRef<Map<number, number> | null>(
+    null,
+  );
   const previousTokenIdsRef = useRef<Set<number> | null>(null);
   const animateReplacementRef = useRef(false);
   const dismissalWasAtNewestRef = useRef(false);
@@ -52,6 +60,15 @@ export default function DiscoveryFeed() {
       animateReplacementRef.current = true;
 
       dismissalTimerRef.current = window.setTimeout(() => {
+        replacementStartPositionsRef.current = new Map(
+          [...slotRefs.current.entries()].map(([tokenId, slot]) => [
+            tokenId,
+            slot.querySelector<HTMLElement>(".discovery-card")
+              ?.getBoundingClientRect().left ??
+              slot.getBoundingClientRect().left,
+          ]),
+        );
+
         void queryClient.invalidateQueries({
           queryKey: ["discoveries"],
         });
@@ -59,12 +76,18 @@ export default function DiscoveryFeed() {
       }, DISMISS_ANIMATION_DURATION_MS);
     },
     onError: () => {
+      animateReplacementRef.current = false;
+      dismissalWasAtNewestRef.current = false;
       setDismissingTokenId(null);
     },
   });
 
   function handleDismiss(tokenId: number) {
-    if (dismissingTokenId !== null) {
+    if (
+      dismissingTokenId !== null ||
+      isReflowing ||
+      enteringTokenIds.size > 0
+    ) {
       return;
     }
 
@@ -164,6 +187,81 @@ export default function DiscoveryFeed() {
     previousTokenCountRef.current = tokens.length;
   }, [tokens.length]);
 
+  useLayoutEffect(() => {
+    const startPositions = replacementStartPositionsRef.current;
+
+    if (!startPositions) {
+      return;
+    }
+
+    replacementStartPositionsRef.current = null;
+    const shouldAutoscroll = dismissalWasAtNewestRef.current;
+
+    const movedCards: HTMLElement[] = [];
+
+    for (const [tokenId, startLeft] of startPositions) {
+      const slot = slotRefs.current.get(tokenId);
+      const card = slot?.querySelector<HTMLElement>(".discovery-card");
+
+      if (!card) {
+        continue;
+      }
+
+      const offset = card.getBoundingClientRect().left - startLeft;
+
+      if (Math.abs(offset) < 1) {
+        continue;
+      }
+
+      card.style.transition = "none";
+      card.style.transform = `translateX(${-offset}px)`;
+      movedCards.push(card);
+    }
+
+    if (movedCards.length > 0) {
+      setIsReflowing(true);
+      reflowFrameRef.current = requestAnimationFrame(() => {
+        for (const card of movedCards) {
+          card.style.transition = `transform ${CARD_REFLOW_DURATION_MS}ms ease`;
+          card.style.transform = "translateX(0)";
+        }
+
+        reflowFrameRef.current = null;
+        reflowCleanupTimerRef.current = window.setTimeout(() => {
+          for (const card of movedCards) {
+            card.style.removeProperty("transition");
+            card.style.removeProperty("transform");
+          }
+
+          if (shouldAutoscroll) {
+            const feed = feedRef.current;
+
+            if (feed) {
+              feed.scrollTo({
+                left: feed.scrollWidth,
+                behavior: "smooth",
+              });
+            }
+          }
+
+          setIsReflowing(false);
+          reflowCleanupTimerRef.current = null;
+        }, CARD_REFLOW_DURATION_MS);
+      });
+    } else if (shouldAutoscroll) {
+      requestAnimationFrame(() => {
+        const feed = feedRef.current;
+
+        if (feed) {
+          feed.scrollTo({
+            left: feed.scrollWidth,
+            behavior: "smooth",
+          });
+        }
+      });
+    }
+  }, [tokens]);
+
   useEffect(() => {
     const currentTokenIds = new Set(tokens.map((token) => token.id));
     const previousTokenIds = previousTokenIdsRef.current;
@@ -184,7 +282,7 @@ export default function DiscoveryFeed() {
         enteringTimerRef.current = window.setTimeout(() => {
           setEnteringTokenIds(new Set());
           enteringTimerRef.current = null;
-        }, REPLACEMENT_ANIMATION_DURATION_MS);
+        }, CARD_REFLOW_DURATION_MS + REPLACEMENT_ANIMATION_DURATION_MS);
       } else if (
         dismissingTokenId !== null &&
         !currentTokenIds.has(dismissingTokenId)
@@ -200,21 +298,6 @@ export default function DiscoveryFeed() {
       dismissingTokenId !== null &&
       !currentTokenIds.has(dismissingTokenId)
     ) {
-      if (dismissalWasAtNewestRef.current) {
-        requestAnimationFrame(() => {
-          const feed = feedRef.current;
-
-          if (!feed) {
-            return;
-          }
-
-          feed.scrollTo({
-            left: feed.scrollWidth,
-            behavior: "smooth",
-          });
-        });
-      }
-
       dismissalWasAtNewestRef.current = false;
       setDismissingTokenId(null);
     }
@@ -228,6 +311,14 @@ export default function DiscoveryFeed() {
 
       if (enteringTimerRef.current !== null) {
         window.clearTimeout(enteringTimerRef.current);
+      }
+
+      if (reflowFrameRef.current !== null) {
+        cancelAnimationFrame(reflowFrameRef.current);
+      }
+
+      if (reflowCleanupTimerRef.current !== null) {
+        window.clearTimeout(reflowCleanupTimerRef.current);
       }
 
     };
@@ -296,12 +387,22 @@ export default function DiscoveryFeed() {
               {[...tokens].reverse().map((token) => (
                 <div
                   key={token.id}
+                  ref={(slot) => {
+                    if (slot) {
+                      slotRefs.current.set(token.id, slot);
+                    } else {
+                      slotRefs.current.delete(token.id);
+                    }
+                  }}
                   className="discovery-card-slot"
                 >
                   <TokenCard
                     token={token}
                     onDismiss={() => handleDismiss(token.id)}
                     isDismissing={dismissingTokenId === token.id}
+                    isDismissDisabled={
+                      isReflowing || enteringTokenIds.size > 0
+                    }
                     isEntering={enteringTokenIds.has(token.id)}
                   />
                 </div>

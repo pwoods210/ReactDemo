@@ -329,6 +329,9 @@
   width: 21rem;
 
   overflow: hidden;
+
+  background-color: var(--app-surface-raised);
+  border-radius: 0.85rem;
 }
 
 .discovery-card {
@@ -354,6 +357,7 @@
 .discovery-card--entering {
   animation: discovery-card-slide-in 420ms cubic-bezier(0.22, 1, 0.36, 1)
     both;
+  animation-delay: 320ms;
 }
 
 @keyframes discovery-card-slide-in {
