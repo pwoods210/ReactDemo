@@ -130,6 +130,104 @@
   max-width: 20rem;
 }
 
+.face-gate {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+
+  background:
+    radial-gradient(circle at 50% 35%, rgb(122 162 255 / 22%), transparent 36rem),
+    linear-gradient(145deg, #101725 0%, #191b27 48%, #111317 100%);
+  backdrop-filter: blur(14px);
+
+  opacity: 1;
+  transition:
+    opacity 520ms ease,
+    visibility 0s linear 0s;
+}
+
+.face-gate--leaving {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 520ms ease,
+    visibility 0s linear 520ms;
+}
+
+.face-gate-panel {
+  display: flex;
+  width: min(100%, 28rem);
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 2rem;
+
+  background: rgb(26 30 35 / 82%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 35%);
+  text-align: center;
+}
+
+.face-gate-logo {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+}
+
+.face-gate-kicker {
+  color: var(--app-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.face-gate-disclaimer {
+  max-width: 22rem;
+  margin: 0;
+
+  color: var(--bs-body-color);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.face-gate-enter {
+  min-width: 12rem;
+  padding: 0.75rem 1.25rem;
+
+  background: var(--app-accent);
+  border: 1px solid var(--app-accent);
+  border-radius: 999px;
+  color: #101318;
+
+  font-weight: 700;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+.face-gate-enter:hover:not(:disabled) {
+  background: #9ab7ff;
+  border-color: #9ab7ff;
+  transform: translateY(-1px);
+}
+
+.face-gate-enter:focus-visible {
+  outline: 3px solid rgb(122 162 255 / 45%);
+  outline-offset: 3px;
+}
+
+.face-gate-enter:disabled {
+  cursor: wait;
+}
+
 .discovery-feed {
   padding: 1.25rem;
 
