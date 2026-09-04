@@ -69,6 +69,9 @@ def test_handle_token_profile_watches_pumpfun_tokens(monkeypatch):
 
     assert persisted[0]["status"] == "watching"
     assert persisted[0]["token_profile"] == profile
+    assert persisted[0]["pairs"] == [
+        {"dexId": "pumpfun", "pairAddress": "pair-123"}
+    ]
     assert "token-123" in watch
 
 
@@ -96,6 +99,9 @@ def test_handle_token_profile_persists_direct_pumpswap_tokens_as_new(
     )
 
     assert persisted[0]["status"] == "new"
+    assert persisted[0]["pairs"] == [
+        {"dexId": "pumpswap", "pairAddress": "pair-123"}
+    ]
     assert watch == {}
 
 
@@ -259,6 +265,17 @@ def test_persist_discovery_sync_maps_pair_data_to_service(monkeypatch):
                 "exchange": "pumpswap",
                 "status": "new",
                 "graduated_at": None,
+                "token_profile": {"tokenAddress": "token-123"},
+                "pairs": [
+                    {
+                        "pairAddress": "pair-123",
+                        "dexId": "PumpSwap",
+                        "baseToken": {
+                            "name": "Example Token",
+                            "symbol": "EXAMPLE",
+                        },
+                    }
+                ],
             },
         )
     ]

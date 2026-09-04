@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { DiscoveredToken } from "../Common/types";
@@ -9,9 +9,17 @@ const token: DiscoveredToken = {
   name: "Example Token",
   symbol: "EXAMPLE",
   tokenAddress: "1234567890abcdefghijklmnopqrstuvwxyz",
+  pairAddress: "pair-123",
   source: "DexScreener",
+  exchange: "pumpswap",
   discoveredAt: "2026-08-31T12:34:00Z",
   status: "watching",
+  graduatedAt: null,
+  tokenProfile: {
+    chainId: "solana",
+    tokenAddress: "1234567890abcdefghijklmnopqrstuvwxyz",
+  },
+  pairs: [],
 };
 
 describe("TokenCard", () => {
@@ -33,5 +41,66 @@ describe("TokenCard", () => {
     const emblem = document.querySelector(".token-icon");
 
     expect(emblem).toHaveTextContent("E");
+  });
+
+  it("uses the profile icon when one is available", () => {
+    render(
+      <TokenCard
+        token={{
+          ...token,
+          tokenProfile: {
+            ...token.tokenProfile,
+            icon: "https://example.com/profile-icon.png",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("img")).toHaveAttribute(
+      "src",
+      "https://example.com/profile-icon.png",
+    );
+    expect(document.querySelector(".token-icon")).not.toHaveTextContent("E");
+  });
+
+  it("uses a pair image when the profile has no icon", () => {
+    render(
+      <TokenCard
+        token={{
+          ...token,
+          pairs: [
+            {
+              info: {
+                imageUrl: "https://example.com/pair-icon.png",
+              },
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("img")).toHaveAttribute(
+      "src",
+      "https://example.com/pair-icon.png",
+    );
+  });
+
+  it("falls back to the symbol letter when the image fails", () => {
+    render(
+      <TokenCard
+        token={{
+          ...token,
+          tokenProfile: {
+            ...token.tokenProfile,
+            icon: "https://example.com/missing-icon.png",
+          },
+        }}
+      />,
+    );
+
+    fireEvent.error(screen.getByRole("img"));
+
+    expect(document.querySelector(".token-icon")).toHaveTextContent("E");
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });

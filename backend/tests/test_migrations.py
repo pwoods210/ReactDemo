@@ -56,6 +56,8 @@ def test_alembic_upgrade_creates_expected_discovery_schema(
         "symbol",
         "source",
         "exchange",
+        "token_profile",
+        "pairs_data",
         "status",
         "discovered_at",
         "graduated_at",
@@ -69,4 +71,4 @@ def test_alembic_upgrade_creates_expected_discovery_schema(
             text("SELECT version_num FROM alembic_version")
         ).scalar_one()
 
-    assert revision == "92d2b899be12"
+    assert revision == "ccf8ecc64082"

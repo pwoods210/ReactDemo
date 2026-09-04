@@ -32,7 +32,12 @@ def upsert_discovery(
     exchange: str | None,
     status: str,
     graduated_at: datetime | None = None,
+    token_profile: dict | None = None,
+    pairs: list[dict] | None = None,
 ) -> Discovery:
+    token_profile = token_profile or {}
+    pairs = pairs or []
+
     statement = insert(Discovery).values(
         token_address=token_address,
         pair_address=pair_address,
@@ -42,6 +47,8 @@ def upsert_discovery(
         exchange=exchange,
         status=status,
         graduated_at=graduated_at,
+        token_profile=token_profile,
+        pairs_data=pairs,
     )
 
     update_values = {
@@ -50,6 +57,8 @@ def upsert_discovery(
         "symbol": statement.excluded.symbol,
         "source": statement.excluded.source,
         "exchange": statement.excluded.exchange,
+        "token_profile": statement.excluded.token_profile,
+        "pairs_data": statement.excluded.pairs_data,
 
         # Never downgrade a token after it has graduated.
         "status": case(

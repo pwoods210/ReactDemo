@@ -17,9 +17,17 @@ const token: DiscoveredToken = {
   name: "Example Token",
   symbol: "EXAMPLE",
   tokenAddress: "token-123",
+  pairAddress: "pair-123",
   source: "DexScreener",
+  exchange: "pumpswap",
   discoveredAt: "2026-08-31T12:34:00Z",
   status: "new",
+  graduatedAt: null,
+  tokenProfile: {
+    chainId: "solana",
+    tokenAddress: "token-123",
+  },
+  pairs: [],
 };
 
 function renderFeed() {

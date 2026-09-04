@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import type {
   DiscoveredToken,
   DiscoveryStatus,
@@ -17,7 +19,20 @@ function shortenAddress(address: string) {
   return `${address.slice(0, 7)}...${address.slice(-7)}`;
 }
 
+function getTokenImageUrl(token: DiscoveredToken) {
+  const profileIcon = token.tokenProfile.icon?.trim();
+
+  if (profileIcon) {
+    return profileIcon;
+  }
+
+  return token.pairs.find((pair) => pair.info?.imageUrl)?.info?.imageUrl;
+}
+
 function TokenCard({ token }: TokenCardProps) {
+  const imageUrl = getTokenImageUrl(token);
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const imageSrc = imageUrl && imageUrl !== failedImageUrl ? imageUrl : null;
   const discoveredTime = new Date(token.discoveredAt).toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
@@ -27,8 +42,17 @@ function TokenCard({ token }: TokenCardProps) {
     <article className="discovery-card">
       <div className="discovery-card-header">
         <div className="token-identity">
-          <div className="token-icon" aria-hidden="true">
-            {token.symbol.slice(0, 1)}
+          <div className="token-icon" aria-hidden={imageSrc ? undefined : true}>
+            {imageSrc ? (
+              <img
+                className="token-icon-image"
+                src={imageSrc}
+                alt={`${token.name} icon`}
+                onError={() => setFailedImageUrl(imageSrc)}
+              />
+            ) : (
+              token.symbol.slice(0, 1)
+            )}
           </div>
           <div>
             <div className="token-name">{token.name}</div>

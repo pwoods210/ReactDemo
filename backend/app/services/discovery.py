@@ -29,6 +29,8 @@ def record_discovery(
     exchange: str | None,
     status: str,
     graduated_at: datetime | None = None,
+    token_profile: dict | None = None,
+    pairs: list[dict] | None = None,
 ) -> Discovery:
     return upsert_discovery(
         session,
@@ -40,4 +42,6 @@ def record_discovery(
         exchange=exchange,
         status=status,
         graduated_at=graduated_at,
+        token_profile=token_profile,
+        pairs=pairs,
     )
