@@ -226,15 +226,48 @@
   );
 }
 
-.discovery-card {
+.discovery-card-slot {
   flex: 0 0 21rem;
-  width: auto;
+  width: 21rem;
+
+  overflow: hidden;
+}
+
+.discovery-card {
+  width: 100%;
 
   padding: 1rem;
 
   background-color: var(--app-surface-raised);
   border: 1px solid var(--bs-border-color);
   border-radius: 0.85rem;
+
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+}
+
+.discovery-card--dismissing {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.94);
+}
+
+.discovery-card--entering {
+  animation: discovery-card-slide-in 420ms cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+@keyframes discovery-card-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-110%) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 .discovery-card-header {
@@ -373,8 +406,9 @@
 }
 
 @media (max-width: 575px) {
-  .discovery-card {
+  .discovery-card-slot {
     flex-basis: 85%;
+    width: 85%;
   }
 
   .discovery-card-details {
@@ -738,4 +772,11 @@
 .system-status__service-detail {
   font-size: 0.75rem;
   opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .discovery-card--dismissing,
+  .discovery-card--entering {
+    animation: none;
+  }
 }

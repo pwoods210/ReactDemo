@@ -9,6 +9,7 @@ interface TokenCardProps {
   token: DiscoveredToken;
   onDismiss?: () => void;
   isDismissing?: boolean;
+  isEntering?: boolean;
 }
 
 const statusClasses: Record<DiscoveryStatus, string> = {
@@ -35,6 +36,7 @@ function TokenCard({
   token,
   onDismiss,
   isDismissing = false,
+  isEntering = false,
 }: TokenCardProps) {
   const imageUrl = getTokenImageUrl(token);
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
@@ -45,7 +47,11 @@ function TokenCard({
   });
 
   return (
-    <article className="discovery-card">
+    <article
+      className={`discovery-card${
+        isDismissing ? " discovery-card--dismissing" : ""
+      }${isEntering ? " discovery-card--entering" : ""}`}
+    >
       <div className="discovery-card-header">
         <div className="token-identity">
           <div className="token-icon" aria-hidden={imageSrc ? undefined : true}>

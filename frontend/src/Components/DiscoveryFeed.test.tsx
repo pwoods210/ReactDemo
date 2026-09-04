@@ -91,7 +91,15 @@ describe("DiscoveryFeed", () => {
   });
 
   it("dismisses a token and invalidates the discovery query", async () => {
-    mockedFetchDiscoveries.mockResolvedValue([token]);
+    mockedFetchDiscoveries
+      .mockResolvedValueOnce([token])
+      .mockResolvedValueOnce([
+        {
+          ...token,
+          id: 2,
+          name: "Older Token",
+        },
+      ]);
     mockedDismissDiscovery.mockResolvedValue();
 
     renderFeed();
@@ -101,10 +109,19 @@ describe("DiscoveryFeed", () => {
       screen.getByRole("button", { name: "Dismiss Example Token" }),
     );
 
+    expect(
+      document.querySelector(".discovery-card--dismissing"),
+    ).toBeInTheDocument();
+
     await waitFor(() => {
       expect(mockedDismissDiscovery).toHaveBeenCalled();
     });
     expect(mockedDismissDiscovery.mock.calls[0][0]).toBe(1);
-    expect(mockedFetchDiscoveries).toHaveBeenCalledTimes(2);
+    await waitFor(() => {
+      expect(screen.getByText("Older Token")).toBeInTheDocument();
+    });
+    expect(
+      document.querySelector(".discovery-card--entering"),
+    ).toBeInTheDocument();
   });
 });
